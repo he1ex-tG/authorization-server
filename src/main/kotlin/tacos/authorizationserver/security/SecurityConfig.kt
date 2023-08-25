@@ -2,6 +2,7 @@ package tacos.authorizationserver.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.invoke
@@ -23,7 +24,7 @@ class SecurityConfig {
             .authorizeHttpRequests {
                 it.anyRequest().authenticated()
             }
-            .formLogin {}
+            .formLogin(Customizer.withDefaults())
             .build()
     }
 
