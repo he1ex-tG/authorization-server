@@ -1,4 +1,4 @@
-package tacos.authorizationserver.storage
+package tacos.oauth2authorizationserver.storage
 
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean

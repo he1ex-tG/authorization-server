@@ -1,11 +1,11 @@
-package tacos.authorizationserver
+package tacos.oauth2authorizationserver
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class AuthorizationServerApplication
+class Oauth2AuthorizationServerApplication
 
 fun main(args: Array<String>) {
-	runApplication<AuthorizationServerApplication>(*args)
+	runApplication<Oauth2AuthorizationServerApplication>(*args)
 }

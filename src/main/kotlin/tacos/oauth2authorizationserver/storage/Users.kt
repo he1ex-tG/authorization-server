@@ -1,4 +1,4 @@
-package tacos.authorizationserver.storage
+package tacos.oauth2authorizationserver.storage
 
 import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority

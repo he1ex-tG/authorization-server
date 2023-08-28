@@ -1,4 +1,4 @@
-package tacos.authorizationserver.security
+package tacos.oauth2authorizationserver.security
 
 import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.RSAKey
