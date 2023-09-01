@@ -18,7 +18,7 @@ class DataLoader {
                 Users("aaa", encoder.encode("aaa"), "ROLE_ADMIN")
             )
             usersRepository.save(
-                Users("qqq", encoder.encode("qqq"), "ROLE_ADMIN")
+                Users("qqq", encoder.encode("qqq"), "ROLE_USER")
             )
         }
     }

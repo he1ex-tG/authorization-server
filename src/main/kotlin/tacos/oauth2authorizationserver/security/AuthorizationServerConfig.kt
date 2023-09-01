@@ -44,7 +44,7 @@ class AuthorizationServerConfig {
 
     @Bean
     fun registeredClientRepository(encoder: PasswordEncoder): RegisteredClientRepository {
-        val registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
+        val registeredAdminClient = RegisteredClient.withId(UUID.randomUUID().toString())
             .clientId("taco-admin-client")
             .clientSecret(encoder.encode("secret"))
             .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
@@ -53,10 +53,20 @@ class AuthorizationServerConfig {
             .redirectUri("http://localhost:9090/login/oauth2/code/taco-admin-client")
             .scope("writeIngredients")
             .scope("deleteIngredients")
+            .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
+            .build()
+        val registeredTacoClient = RegisteredClient.withId(UUID.randomUUID().toString())
+            .clientId("taco-main")
+            .clientSecret(encoder.encode("secret"))
+            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+            .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+            .redirectUri("http://localhost:8080/login/oauth2/code/taco-main")
+            .scope("tacoMain")
             .scope(OidcScopes.OPENID)
             .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
             .build()
-        return InMemoryRegisteredClientRepository(registeredClient)
+        return InMemoryRegisteredClientRepository(registeredAdminClient, registeredTacoClient)
     }
 
     @Bean
