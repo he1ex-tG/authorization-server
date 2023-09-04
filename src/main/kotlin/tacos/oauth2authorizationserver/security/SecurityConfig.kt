@@ -6,35 +6,42 @@ import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.invoke
+import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.SecurityFilterChain
-import tacos.oauth2authorizationserver.storage.UsersRepository
 
 @Configuration
-@EnableWebSecurity
+//@EnableWebSecurity
 class SecurityConfig {
 
-    @Bean
+    /*@Bean
     fun defaultSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
         return http
-            .authorizeHttpRequests {
+            /*.authorizeHttpRequests {
                 it.anyRequest().authenticated()
-            }
+            }*/
             .formLogin(Customizer.withDefaults())
             .build()
-    }
+    }*/
 
     @Bean
-    fun usersDetailService(usersRepository: UsersRepository): UserDetailsService {
-        return UserDetailsService { username ->
-            usersRepository.findByUsername(username).orElseThrow {
-                UsernameNotFoundException("User $username not found!")
-            }
-        }
+    fun usersDetailService(encoder: PasswordEncoder): UserDetailsService {
+        val userA = User.builder()
+            .username("aaa")
+            .password(encoder.encode("aaa"))
+            .roles("ADMIN")
+            .build()
+        val userB = User.builder()
+            .username("qqq")
+            .password(encoder.encode("qqq"))
+            .roles("USER")
+            .build()
+        return InMemoryUserDetailsManager(userA, userB)
     }
 
     @Bean
