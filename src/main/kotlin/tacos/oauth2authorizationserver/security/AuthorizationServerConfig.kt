@@ -5,6 +5,7 @@ import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet
 import com.nimbusds.jose.jwk.source.JWKSource
 import com.nimbusds.jose.proc.SecurityContext
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.Ordered
@@ -12,6 +13,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.invoke
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod
@@ -22,6 +24,8 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer
+import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OidcConfigurer
+import org.springframework.security.oauth2.server.authorization.oidc.OidcProviderConfiguration
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings
 import org.springframework.security.web.SecurityFilterChain
@@ -31,75 +35,59 @@ import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.util.*
 
-
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
 class AuthorizationServerConfig {
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    fun authorizationServerSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
+    fun authorizationServerSecurityFilterChain(encoder: PasswordEncoder, http: HttpSecurity): SecurityFilterChain {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http)
+        // Enable OpenID Connect 1.0 support
         http.getConfigurer(OAuth2AuthorizationServerConfigurer::class.java)
-            .oidc(Customizer.withDefaults())
-        /*return http
-            .formLogin(Customizer.withDefaults())
-            .build()*/
-        /*http.invoke {
-            formLogin {
-                Customizer.withDefaults<HttpSecurity>()
-            }
-            /*exceptionHandling {
-                defaultAuthenticationEntryPointFor(
-                    LoginUrlAuthenticationEntryPoint("/login"),
-                    MediaTypeRequestMatcher(MediaType.TEXT_HTML)
-                )
-            }*/
-            /*oauth2ResourceServer {
-                jwt { }
-            }*/
-        }*/
-        http
-            .formLogin(Customizer.withDefaults())
-            .oauth2ResourceServer {
-                it.jwt(Customizer.withDefaults())
-            }
+            .oidc {  }
+            .registeredClientRepository(registeredClientRepository(encoder))
+        http {
+            formLogin { }
+        }
         return http.build()
     }
 
-    @Bean
-    fun defaultSecurityFilterChain(http: HttpSecurity): SecurityFilterChain? {
-        http
-            .formLogin(Customizer.withDefaults())
-        return http.build()
-    }
-
-    @Bean
+    //@Bean
     fun registeredClientRepository(encoder: PasswordEncoder): RegisteredClientRepository {
-        val registeredAdminClient = RegisteredClient.withId("taco-admin-client")
+        return InMemoryRegisteredClientRepository(
+            getAdminRegisteredClient(encoder),
+            getUserRegisteredClient(encoder)
+        )
+    }
+
+    private fun getAdminRegisteredClient(encoder: PasswordEncoder): RegisteredClient {
+        return RegisteredClient.withId(UUID.randomUUID().toString())
             .clientId("taco-admin-client")
-            .clientSecret(encoder.encode("secret"))
+            .clientSecret(encoder.encode("taco-admin-client"))
             .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
             .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
             .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
             .redirectUri("http://localhost:9090/login/oauth2/code/taco-admin-client")
-            .scope("writeIngredients")
-            .scope("deleteIngredients")
+            .scope("write:ingredients")
+            .scope("delete:ingredients")
             .scope(OidcScopes.OPENID)
             .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
             .build()
-        val registeredTacoClient = RegisteredClient.withId(UUID.randomUUID().toString())
-            .clientId("taco-main")
-            .clientSecret(encoder.encode("secret"))
+    }
+
+    private fun getUserRegisteredClient(encoder: PasswordEncoder): RegisteredClient {
+        return RegisteredClient.withId(UUID.randomUUID().toString())
+            .clientId("taco-user-client")
+            .clientSecret(encoder.encode("taco-user-client"))
             .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
             .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
             .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-            .redirectUri("http://localhost:8080/login/oauth2/code/taco-main")
-            .scope("tacoMain")
+            .redirectUri("http://localhost:8080/login/oauth2/code/taco-user-client")
+            .scope("taco:user")
             .scope(OidcScopes.OPENID)
-            .clientSettings(ClientSettings.builder().requireAuthorizationConsent(false).build())
+            .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
             .build()
-        return InMemoryRegisteredClientRepository(registeredAdminClient, registeredTacoClient)
     }
 
     @Bean
@@ -132,6 +120,17 @@ class AuthorizationServerConfig {
 
     @Bean
     fun authorizationServerSettings(): AuthorizationServerSettings {
-        return AuthorizationServerSettings.builder().build()
+        return AuthorizationServerSettings.builder()
+            .authorizationEndpoint("/oauth2/v1/authorize")
+            .deviceAuthorizationEndpoint("/oauth2/v1/device_authorization")
+            .deviceVerificationEndpoint("/oauth2/v1/device_verification")
+            .tokenEndpoint("/oauth2/v1/token")
+            .tokenIntrospectionEndpoint("/oauth2/v1/introspect")
+            .tokenRevocationEndpoint("/oauth2/v1/revoke")
+            .jwkSetEndpoint("/oauth2/v1/jwks")
+            .oidcLogoutEndpoint("/connect/v1/logout")
+            .oidcUserInfoEndpoint("/connect/v1/userinfo")
+            .oidcClientRegistrationEndpoint("/connect/v1/register")
+            .build()
     }
 }
