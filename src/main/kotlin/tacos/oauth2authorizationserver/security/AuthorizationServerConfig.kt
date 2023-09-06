@@ -38,14 +38,14 @@ class AuthorizationServerConfig {
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     fun authorizationServerSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
+        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http)
 
         // Enable OpenID Connect 1.0 support
         http.getConfigurer(OAuth2AuthorizationServerConfigurer::class.java)
             .oidc { }
 
         http {
-            formLogin {
-            }
+            formLogin { }
         }
         return http.build()
     }
@@ -73,6 +73,7 @@ class AuthorizationServerConfig {
             .build()
     }
 
+    @Bean
     private fun getUserRegisteredClient(encoder: PasswordEncoder): RegisteredClient {
         return RegisteredClient.withId(UUID.randomUUID().toString())
             .clientId("taco-user-client")
