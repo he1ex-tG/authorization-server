@@ -33,7 +33,9 @@ import java.util.*
 
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
-class AuthorizationServerConfig {
+class AuthorizationServerConfig(
+    private val encoder: PasswordEncoder
+) {
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -51,14 +53,14 @@ class AuthorizationServerConfig {
     }
 
     @Bean
-    fun registeredClientRepository(encoder: PasswordEncoder): RegisteredClientRepository {
+    fun registeredClientRepository(): RegisteredClientRepository {
         return InMemoryRegisteredClientRepository(
-            getAdminRegisteredClient(encoder),
-            getUserRegisteredClient(encoder)
+            getAdminRegisteredClient(),
+            getUserRegisteredClient()
         )
     }
 
-    private fun getAdminRegisteredClient(encoder: PasswordEncoder): RegisteredClient {
+    private fun getAdminRegisteredClient(): RegisteredClient {
         return RegisteredClient.withId(UUID.randomUUID().toString())
             .clientId("taco-admin-client")
             .clientSecret(encoder.encode("taco-admin-client"))
@@ -74,7 +76,7 @@ class AuthorizationServerConfig {
     }
 
     @Bean
-    private fun getUserRegisteredClient(encoder: PasswordEncoder): RegisteredClient {
+    private fun getUserRegisteredClient(): RegisteredClient {
         return RegisteredClient.withId(UUID.randomUUID().toString())
             .clientId("taco-user-client")
             .clientSecret(encoder.encode("taco-user-client"))
