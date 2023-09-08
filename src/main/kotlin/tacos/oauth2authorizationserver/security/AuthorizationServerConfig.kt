@@ -32,7 +32,6 @@ import java.security.interfaces.RSAPublicKey
 import java.util.*
 
 @Configuration(proxyBeanMethods = false)
-@EnableWebSecurity
 class AuthorizationServerConfig(
     private val encoder: PasswordEncoder
 ) {

@@ -22,9 +22,7 @@ class SecurityConfig {
             authorizeRequests {
                 authorize(anyRequest, authenticated)
             }
-            formLogin {
-
-            }
+            formLogin { }
         }
         return http.build()
     }
