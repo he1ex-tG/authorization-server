@@ -74,7 +74,6 @@ class AuthorizationServerConfig(
             .build()
     }
 
-    @Bean
     private fun getUserRegisteredClient(): RegisteredClient {
         return RegisteredClient.withId(UUID.randomUUID().toString())
             .clientId("taco-user-client")
