@@ -24,6 +24,11 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation(kotlin("stdlib-jdk8"))
+
+	implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
+	implementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo.spring31x:4.9.3")
+
+	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 }
 
 tasks.withType<KotlinCompile> {
