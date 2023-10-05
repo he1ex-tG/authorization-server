@@ -4,13 +4,14 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer
 import org.springframework.security.config.annotation.web.invoke
-import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.SecurityFilterChain
+import tacos.oauth2authorizationserver.data.repository.UserRepository
 
 @Configuration
 @EnableWebSecurity
@@ -20,26 +21,33 @@ class SecurityConfig {
     fun defaultSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http {
             authorizeRequests {
+                authorize("/registration", permitAll)
                 authorize(anyRequest, authenticated)
             }
-            formLogin { }
+            formLogin {
+                loginPage = "/login"
+                permitAll()
+            }
         }
         return http.build()
     }
 
     @Bean
-    fun usersDetailService(encoder: PasswordEncoder): UserDetailsService {
-        val userAdmin = User.builder()
-            .username("admin")
-            .password(encoder.encode("admin"))
-            .roles("ADMIN")
-            .build()
-        val userUser = User.builder()
-            .username("user")
-            .password(encoder.encode("user"))
-            .roles("USER")
-            .build()
-        return InMemoryUserDetailsManager(userAdmin, userUser)
+    fun webSecurityCustomizer(): WebSecurityCustomizer {
+        return WebSecurityCustomizer {
+            it.debug(false)
+                .ignoring()
+                .requestMatchers("/images/**", "/favicon.ico")
+        }
+    }
+
+    @Bean
+    fun usersDetailService(userRepository: UserRepository): UserDetailsService {
+        return UserDetailsService { username ->
+            userRepository.getUserByUsername(username).orElseThrow {
+                UsernameNotFoundException("User with username \"$username\" not found.")
+            }
+        }
     }
 
     @Bean
