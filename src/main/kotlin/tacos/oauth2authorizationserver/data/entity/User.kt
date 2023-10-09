@@ -17,7 +17,12 @@ class User(
     var zip: String = "",
     var phoneNumber: String = "",
     @Id
-    var id: String? = null
+    var id: String? = null,
+
+    var accountNotExpired: Boolean = true,
+    var accountNonLocked: Boolean = true,
+    var credentialsNonExpired: Boolean = true,
+    var accountEnabled: Boolean = false
 ) : UserDetails {
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
@@ -33,19 +38,19 @@ class User(
     }
 
     override fun isAccountNonExpired(): Boolean {
-        return true
+        return accountNotExpired
     }
 
     override fun isAccountNonLocked(): Boolean {
-        return true
+        return accountNonLocked
     }
 
     override fun isCredentialsNonExpired(): Boolean {
-        return true
+        return credentialsNonExpired
     }
 
     override fun isEnabled(): Boolean {
-        return true
+        return accountEnabled
     }
 
 }
