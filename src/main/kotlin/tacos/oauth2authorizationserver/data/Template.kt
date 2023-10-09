@@ -16,8 +16,8 @@ class Template(
     @Bean
     fun addUsers(): CommandLineRunner {
         return CommandLineRunner {
-            val userUser = User("user", encoder.encode("user"))
-            val userAdmin = User("admin", encoder.encode("admin"))
+            val userUser = User("user", encoder.encode("user"), accountEnabled = true)
+            val userAdmin = User("admin", encoder.encode("admin"), accountEnabled = true)
             userRepository.save(userUser)
             userRepository.save(userAdmin)
         }

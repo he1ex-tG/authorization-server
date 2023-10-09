@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service
 import tacos.oauth2authorizationserver.data.entity.User
 import tacos.oauth2authorizationserver.data.repository.UserRepository
 import tacos.security.UserRegistrationData
-import java.nio.file.attribute.UserPrincipalNotFoundException
 import kotlin.jvm.optionals.getOrElse
 
 @Service
