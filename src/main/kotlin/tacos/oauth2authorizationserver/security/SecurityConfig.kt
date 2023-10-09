@@ -21,7 +21,7 @@ class SecurityConfig {
     fun defaultSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http {
             authorizeRequests {
-                authorize("/registration", permitAll)
+                authorize("/registration/**", permitAll)
                 authorize(anyRequest, authenticated)
             }
             formLogin {
