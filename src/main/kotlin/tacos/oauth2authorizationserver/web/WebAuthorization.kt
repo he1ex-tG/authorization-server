@@ -2,6 +2,7 @@ package tacos.oauth2authorizationserver.web
 
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
 import tacos.oauth2authorizationserver.service.UserService
@@ -30,5 +31,14 @@ class WebAuthorization(
         userService.addUser(userRegistrationData)
         redirectAttributes.addFlashAttribute("newUsername", userRegistrationData.username)
         return "redirect:/login"
+    }
+
+    @GetMapping("/registration/confirm/{userId}")
+    fun newUserConfirmation(@PathVariable userId: String): String {
+        return if (userService.confirmUser(userId)) {
+            "registration_confirm"
+        } else {
+            "registration"
+        }
     }
 }
