@@ -29,6 +29,9 @@ dependencies {
 	implementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo.spring31x:4.9.3")
 
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+
+	implementation("org.springframework.boot:spring-boot-starter-integration")
+	implementation("org.springframework.integration:spring-integration-mail")
 }
 
 tasks.withType<KotlinCompile> {
