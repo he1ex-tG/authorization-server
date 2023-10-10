@@ -15,7 +15,7 @@ class User(
     var city: String = "",
     var state: String = "",
     var zip: String = "",
-    var phoneNumber: String = "",
+    var email: String = "",
     @Id
     var id: String? = null,
 
